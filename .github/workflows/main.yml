@@ -55,7 +55,7 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.2.0
         with:
           server: ftp.trimworldwide.com
-          username: production@production.trimworldwide.com
+          username: production
           password: ${{ secrets.main_password }}
 
   deploy_dev:
@@ -69,5 +69,5 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.2.0
         with:
           server: ftp.trimworldwide.com
-          username: dev@dev.trimworldwide.com
+          username: dev
           password: ${{ secrets.dev_password }}
