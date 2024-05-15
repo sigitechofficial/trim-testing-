@@ -1,0 +1,87 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: node:16.14.0
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm i --production
+
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: node:16.14.0
+
+    steps:
+      - uses: actions/checkout@v2
+
+  security_scan:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: node:16.14.0
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Security Scan
+        uses: zricethezav/gitleaks-action@v1.5.0
+
+  deploy_dev:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+
+      - name: 📂 Sync files to subdomain
+        uses: SamKirkland/FTP-Deploy-Action@v4.2.0
+        with:
+          server: ftp.trimworldwide.com
+          username: dev@dev.trimworldwide.com
+          password: ${{ secrets.dev_password }}
+
+  deploy_master:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+
+      - name: Manual Approval
+        uses: chrnorm/deployment-approval@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          env: production
+
+      - name: 📂 Sync files to main domain
+        if: ${{ steps.approval.outputs.approved == 'true' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.2.0
+        with:
+          server: ftp.trimworldwide.com
+          username: production@production.trimworldwide.com
+          password: ${{ secrets.main_password }}
