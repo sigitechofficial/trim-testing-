@@ -74,7 +74,10 @@ jobs:
           host: ftp.trimworldwide.com
           username: production
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          target: "/home/trimworldwide/production.trimworldwide.com"  # Adjust the target path
+          target: "/home/trimworldwide/production.trimworldwide.com"
+          source: "."
+          port: 22
+          debug: true
 
   deploy_dev:
     if: github.ref == 'refs/heads/dev'
@@ -98,4 +101,7 @@ jobs:
           host: ftp.trimworldwide.com
           username: dev
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          target: "/home/trimworldwide/dev.trimworldwide.com"  # Adjust the target path
+          target: "/home/trimworldwide/dev.trimworldwide.com"
+          source: "."
+          port: 22
+          debug: true
