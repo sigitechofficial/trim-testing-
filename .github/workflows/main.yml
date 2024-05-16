@@ -51,15 +51,13 @@ jobs:
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
-      - name: List files
-        run: ls -la ./
+        
       - name: 📂 Sync files to main domain
         uses: appleboy/scp-action@v0.1.1
         with:
           host: ftp.trimworldwide.com
           username: production
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          source: "./*"  # Adjusted the source path
           target: "/home/trimworldwide/production.trimworldwide.com"  # Adjust the target path
 
   deploy_dev:
@@ -69,13 +67,11 @@ jobs:
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
-      - name: List files
-        run: ls -la ./
+        
       - name: 📂 Sync files to subdomain
         uses: appleboy/scp-action@v0.1.1
         with:
           host: ftp.trimworldwide.com
           username: dev
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          source: "./*"  # Adjusted the source path
           target: "/home/trimworldwide/dev.trimworldwide.com"  # Adjust the target path
