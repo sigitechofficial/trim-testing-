@@ -13,7 +13,6 @@ jobs:
       image: node:16.14.0
     steps:
       - uses: actions/checkout@v2
-
       - name: Cache node modules
         uses: actions/cache@v2
         with:
@@ -21,15 +20,8 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
       - name: Install dependencies
         run: npm i --production
-
-      - name: Build the project
-        run: npm run build
-
-      - name: List workspace contents
-        run: ls -la
 
   lint:
     needs: build
@@ -59,17 +51,15 @@ jobs:
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
-
       - name: List files
-        run: ls -la ./dist  # Adjust this path based on the build output
-
+        run: ls -la ./
       - name: 📂 Sync files to main domain
         uses: appleboy/scp-action@v0.1.1
         with:
           host: ftp.trimworldwide.com
           username: production
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          source: "./dist/*"  # Adjust the source path based on the build output
+          source: "./*"  # Adjusted the source path
           target: "/home/trimworldwide/production.trimworldwide.com"  # Adjust the target path
 
   deploy_dev:
@@ -79,15 +69,13 @@ jobs:
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
-
       - name: List files
-        run: ls -la ./dist  # Adjust this path based on the build output
-
+        run: ls -la ./
       - name: 📂 Sync files to subdomain
         uses: appleboy/scp-action@v0.1.1
         with:
           host: ftp.trimworldwide.com
           username: dev
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          source: "./dist/*"  # Adjust the source path based on the build output
+          source: "./*"  # Adjusted the source path
           target: "/home/trimworldwide/dev.trimworldwide.com"  # Adjust the target path
