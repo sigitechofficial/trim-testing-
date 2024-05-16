@@ -9,10 +9,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: node:16.14.0
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+          
       - name: Cache node modules
         uses: actions/cache@v2
         with:
@@ -20,24 +24,60 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+            
       - name: Install dependencies
-        run: npm i --production
+        run: npm i
+
+      - name: Build
+        run: npm run build
 
   lint:
     needs: build
     runs-on: ubuntu-latest
-    container:
-      image: node:16.14.0
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+          
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+      - name: Install dependencies
+        run: npm i
+        
+      - name: Lint code
+        run: npm run lint
 
   security_scan:
     needs: build
     runs-on: ubuntu-latest
-    container:
-      image: node:16.14.0
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+          
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            
+      - name: Install dependencies
+        run: npm i
+        
       - name: Security Scan
         uses: zricethezav/gitleaks-action@v1.5.0
 
@@ -51,6 +91,17 @@ jobs:
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+          
+      - name: Install dependencies
+        run: npm i
+        
+      - name: Build
+        run: npm run build
         
       - name: 📂 Sync files to main domain
         uses: appleboy/scp-action@v0.1.1
@@ -67,6 +118,17 @@ jobs:
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+          
+      - name: Install dependencies
+        run: npm i
+        
+      - name: Build
+        run: npm run build
         
       - name: 📂 Sync files to subdomain
         uses: appleboy/scp-action@v0.1.1
