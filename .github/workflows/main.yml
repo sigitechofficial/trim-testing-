@@ -68,16 +68,25 @@ jobs:
       - name: Install dependencies
         run: npm i
         
-      - name: Copy files via SCP
-        uses: appleboy/scp-action@master
+      - name: 📂 Sync files to main domain
+        uses: appleboy/scp-action@v0.1.1
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          host: ftp.trimworldwide.com
+          username: production
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          target: "/home/trimworldwide/production.trimworldwide.com"  # Adjust the target path
           source: "."
-          target: "/path/to/remote/directory"
-          rm: true
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          use_insecure_cipher: false
+          rm: false
+          debug: false
+          strip_components: 0
+          overwrite: false
+          proxy_port: 22
+          proxy_timeout: 30s
+          proxy_use_insecure_cipher: false
 
   deploy_dev:
     if: github.ref == 'refs/heads/dev'
@@ -95,13 +104,22 @@ jobs:
       - name: Install dependencies
         run: npm i
         
-      - name: Copy files via SCP
-        uses: appleboy/scp-action@master
+      - name: 📂 Sync files to subdomain
+        uses: appleboy/scp-action@v0.1.1
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          host: ftp.trimworldwide.com
+          username: dev
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          target: "/home/trimworldwide/dev.trimworldwide.com"  # Adjust the target path
           source: "."
-          target: "/path/to/remote/directory"
-          rm: true
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          use_insecure_cipher: false
+          rm: false
+          debug: false
+          strip_components: 0
+          overwrite: false
+          proxy_port: 22
+          proxy_timeout: 30s
+          proxy_use_insecure_cipher: false
