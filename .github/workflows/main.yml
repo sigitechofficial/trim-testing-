@@ -22,9 +22,17 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-            
       - name: Install dependencies
         run: npm i --production
+
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: node:16.14.0
+
+    steps:
+      - uses: actions/checkout@v2
 
   security_scan:
     needs: build
@@ -35,91 +43,33 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Restore cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-            
-      - name: Install dependencies
-        run: npm i
-        
       - name: Security Scan
         uses: zricethezav/gitleaks-action@v1.5.0
 
-  deploy_main:
+  deploy_production:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: [build, security_scan]
-    environment:
-      name: production
-      url: https://production.trimworldwide.com  # Replace with your production URL
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: 📂 Sync files to production
+        uses: SamKirkland/FTP-Deploy-Action@v4.2.0
         with:
-          node-version: '16.14.0'
-          
-      - name: Install dependencies
-        run: npm i
-        
-      - name: 📂 Sync files to main domain
-        uses: appleboy/scp-action@v0.1.1
-        with:
-          host: ftp.trimworldwide.com
-          username: production
-          key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          target: "/home/trimworldwide/production.trimworldwide.com"  # Adjust the target path
-          source: "."
-          port: 22
-          timeout: 30s
-          command_timeout: 10m
-          use_insecure_cipher: false
-          rm: false
-          debug: false
-          strip_components: 0
-          overwrite: false
-          proxy_port: 22
-          proxy_timeout: 30s
-          proxy_use_insecure_cipher: false
+          server: ftp.production.trimworldwide.com
+          username: trim@production.trimworldwide.com
+          password: ${{ secrets.PRODUCTION_FTP_PASSWORD }}
 
   deploy_dev:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
-    needs: [build, security_scan]
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: 📂 Sync files to development
+        uses: SamKirkland/FTP-Deploy-Action@v4.2.0
         with:
-          node-version: '16.14.0'
-          
-      - name: Install dependencies
-        run: npm i
-        
-      - name: 📂 Sync files to subdomain
-        uses: appleboy/scp-action@v0.1.1
-        with:
-          host: ftp.trimworldwide.com
-          username: dev
-          key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          target: "/home/trimworldwide/dev.trimworldwide.com"  # Adjust the target path
-          source: "."
-          port: 22
-          timeout: 30s
-          command_timeout: 10m
-          use_insecure_cipher: false
-          rm: false
-          debug: false
-          strip_components: 0
-          overwrite: false
-          proxy_port: 22
-          proxy_timeout: 30s
-          proxy_use_insecure_cipher: false
+          server: ftp.dev.trimworldwide.com
+          username: trim@dev.trimworldwide.com
+          password: ${{ secrets.DEV_FTP_PASSWORD }}
